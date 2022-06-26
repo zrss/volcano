@@ -44,6 +44,8 @@ type servicePlugin struct {
 	// flag parse args
 	publishNotReadyAddresses bool
 	disableNetworkPolicy     bool
+	envPrefix string
+	envHyphen string
 }
 
 // New creates service plugin.
@@ -65,6 +67,8 @@ func (sp *servicePlugin) addFlags() {
 		"set publishNotReadyAddresses of svc to true")
 	flagSet.BoolVar(&sp.disableNetworkPolicy, "disable-network-policy", sp.disableNetworkPolicy,
 		"set disableNetworkPolicy of svc to true")
+	flagSet.StringVar(&sp.envPrefix, "env-prefix", sp.envPrefix, "set customize env prefix")
+	flagSet.StringVar(&sp.envHyphen, "env-hyphen", sp.envHyphen, "set customize env hyphen")
 
 	if err := flagSet.Parse(sp.pluginArguments); err != nil {
 		klog.Errorf("plugin %s flagset parse failed, err: %v", sp.Name(), err)
@@ -94,10 +98,20 @@ func (sp *servicePlugin) OnPodCreate(pod *v1.Pod, job *batch.Job) error {
 	var envNames []string
 
 	for _, ts := range job.Spec.Tasks {
-		// TODO(k82cn): The splitter and the prefix of env should be configurable.
-		formateENVKey := strings.Replace(ts.Name, "-", "_", -1)
-		envNames = append(envNames, fmt.Sprintf(EnvTaskHostFmt, strings.ToUpper(formateENVKey)))
-		envNames = append(envNames, fmt.Sprintf(EnvHostNumFmt, strings.ToUpper(formateENVKey)))
+		formatENVKey := strings.Replace(ts.Name, "-", "_", -1)
+
+		envNames = append(envNames,
+			strings.Join([]string{sp.envPrefix, strings.ToUpper(formatENVKey), EnvTaskHost}, sp.envHyphen))
+
+		envNames = append(envNames, fmt.Sprintf(EnvTaskHostFmt, strings.ToUpper(formatENVKey)))
+
+
+		envNames = append(envNames, fmt.Sprintf(EnvHostNumFmt, strings.ToUpper(formatENVKey)))
+
+		envNames = append(envNames,
+			strings.Join([]string{sp.envPrefix, strings.ToUpper(formatENVKey), EnvHostNum}, sp.envHyphen))
+
+		envNames = append(envNames, fmt.Sprintf(EnvTaskHostFmt, strings.ToUpper(formatENVKey)))
 	}
 
 	for _, name := range envNames {

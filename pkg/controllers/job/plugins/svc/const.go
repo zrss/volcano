@@ -19,10 +19,16 @@ package svc
 const (
 	// ConfigMapTaskHostFmt key in config map
 	ConfigMapTaskHostFmt = "%s.host"
-	// EnvTaskHostFmt is the key for host list in environment
-	EnvTaskHostFmt = "VC_%s_HOSTS"
-	// EnvHostNumFmt is the key for host number in environment
-	EnvHostNumFmt = "VC_%s_NUM"
+
+	// EnvTaskHost is the fixed suffix for host list in environment
+	EnvTaskHost = "HOSTS"
+	// EnvTaskHostFmt is the default key for host list in environment
+	EnvTaskHostFmt = "VC_%s_" + EnvTaskHost
+
+	// EnvHostNum is the fixed suffix for host list in environment
+	EnvHostNum = "NUM"
+	// EnvHostNumFmt is the default key for host number in environment
+	EnvHostNumFmt = "VC_%s_" + EnvHostNum
 
 	// ConfigMapMountPath mount path
 	ConfigMapMountPath = "/etc/volcano"
